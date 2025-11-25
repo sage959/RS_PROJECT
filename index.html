@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Recommendation Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-title">🍽️ Restaurant Recommendation Dashboard</h1>
+            <p class="nav-subtitle">AI-Powered Restaurant Discovery</p>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Sidebar for User Input -->
+        <aside class="sidebar">
+            <div class="sidebar-content">
+                <h2>Find Your Perfect Restaurant</h2>
+                <p class="sidebar-description">Customize your preferences below</p>
+
+                <!-- Cuisine Selection -->
+                <div class="form-group">
+                    <label class="form-label">Cuisine Preferences</label>
+                    <select id="cuisineSelect" class="form-control" multiple size="5">
+                        <option value="Italian">Italian</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Mexican">Mexican</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Thai">Thai</option>
+                        <option value="American">American</option>
+                        <option value="Mediterranean">Mediterranean</option>
+                        <option value="Korean">Korean</option>
+                        <option value="French">French</option>
+                    </select>
+                    <small class="form-hint">Hold Ctrl/Cmd to select multiple</small>
+                </div>
+
+                <!-- Location Input -->
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" id="locationInput" class="form-control" placeholder="Enter city or area">
+                </div>
+
+                <!-- Minimum Rating Slider -->
+                <div class="form-group">
+                    <label class="form-label">Minimum Rating: <span id="ratingValue">3.5</span> ⭐</label>
+                    <input type="range" id="ratingSlider" class="slider" min="0" max="5" step="0.5" value="3.5">
+                    <div class="slider-labels">
+                        <span>0</span>
+                        <span>5</span>
+                    </div>
+                </div>
+
+                <!-- Maximum Cost -->
+                <div class="form-group">
+                    <label class="form-label">Max Cost for Two: $<span id="costValue">50</span></label>
+                    <input type="range" id="costSlider" class="slider" min="10" max="200" step="5" value="50">
+                    <div class="slider-labels">
+                        <span>$10</span>
+                        <span>$200</span>
+                    </div>
+                </div>
+
+                <!-- Veg/Non-Veg Filter -->
+                <div class="form-group">
+                    <label class="form-label">Dietary Preference</label>
+                    <select id="vegFilter" class="form-control">
+                        <option value="all">All</option>
+                        <option value="veg">Vegetarian Only</option>
+                        <option value="nonveg">Non-Vegetarian</option>
+                    </select>
+                </div>
+
+                <!-- Delivery Filter -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="deliveryFilter">
+                        <span>Delivery Available</span>
+                    </label>
+                </div>
+
+                <!-- Table Booking Filter -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="bookingFilter">
+                        <span>Table Booking Available</span>
+                    </label>
+                </div>
+
+                <!-- Nearby Mode -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="nearbyMode">
+                        <span>Nearby Mode (within 5km)</span>
+                    </label>
+                </div>
+
+                <!-- Sort By -->
+                <div class="form-group">
+                    <label class="form-label">Sort By</label>
+                    <select id="sortBy" class="form-control">
+                        <option value="similarity">Best Match</option>
+                        <option value="rating">Highest Rating</option>
+                        <option value="cost">Lowest Cost</option>
+                        <option value="distance">Nearest</option>
+                    </select>
+                </div>
+
+                <!-- Recommend Button -->
+                <button id="recommendBtn" class="btn btn--primary btn--full-width">🔍 Find Restaurants</button>
+                
+                <div class="sidebar-footer">
+                    <small>Powered by Content-Based Filtering using TF-IDF &amp; Cosine Similarity</small>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Welcome Section (shown initially) -->
+            <div id="welcomeSection" class="welcome-section">
+                <div class="welcome-content">
+                    <h2>Welcome to Your Personal Restaurant Finder</h2>
+                    <p>Discover the perfect dining experience tailored to your preferences</p>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <h3>Smart Recommendations</h3>
+                            <p>AI-powered content filtering to match your taste</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <h3>Visual Analytics</h3>
+                            <p>Interactive charts and insights about restaurants</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Instant Results</h3>
+                            <p>Get personalized recommendations in seconds</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌟</div>
+                            <h3>Quality Assured</h3>
+                            <p>Filter by ratings, cost, and location</p>
+                        </div>
+                    </div>
+                    <p class="cta-text">👈 Start by selecting your preferences in the sidebar</p>
+                </div>
+            </div>
+
+            <!-- Results Section (hidden initially) -->
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <!-- Top Recommendations Header -->
+                <div class="section-header">
+                    <h2>🎯 Top Recommendations for You</h2>
+                    <p id="resultsCount" class="results-count"></p>
+                </div>
+
+                <!-- Restaurant Cards Container -->
+                <div id="restaurantCards" class="restaurant-grid"></div>
+
+                <!-- Analytics Section -->
+                <div class="analytics-section">
+                    <h2 class="section-title">📊 Dashboard Analytics</h2>
+                    
+                    <div class="charts-grid">
+                        <!-- Cuisine Distribution Chart -->
+                        <div class="chart-card">
+                            <h3>Cuisine Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="cuisineChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Cost Distribution Chart -->
+                        <div class="chart-card">
+                            <h3>Cost Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="costChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Rated Cuisines Chart -->
+                        <div class="chart-card">
+                            <h3>Top Rated Cuisines</h3>
+                            <div class="chart-container">
+                                <canvas id="ratingChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Average Ratings Chart -->
+                        <div class="chart-card">
+                            <h3>Rating Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="avgRatingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Finding the best restaurants for you...</p>
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                    <span class="no-results-icon">🔍</span>
+                    <h3>No restaurants found</h3>
+                    <p>Try adjusting your filters or preferences</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Restaurant Recommendation Dashboard. Built with ❤️ using Content-Based Filtering</p>
+            <p><small>Technology: TF-IDF Vectorization &amp; Cosine Similarity</small></p>
+        </div>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
